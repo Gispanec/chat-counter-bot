@@ -6,7 +6,8 @@ import urllib.error
 import urllib.request
 
 
-# Читаем токен из переменной окружения, чтобы не хранить его в исходном коде.\nTOKEN = os.environ.get("BOT_TOKEN")
+# Читаем токен из переменной окружения, чтобы не хранить его в исходном коде.
+TOKEN = os.environ.get("BOT_TOKEN")
 DATABASE_PATH = os.environ.get("DATABASE_PATH", "counters.sqlite3")
 
 
@@ -23,7 +24,8 @@ def telegram_request(method: str, payload: dict) -> dict:
     return result["result"]
 
 
-# У каждого чата свой счётчик; SQLite сохраняет значения между запусками бота.\ndef next_count(connection: sqlite3.Connection, chat_id: int) -> int:
+# У каждого чата свой счётчик; SQLite сохраняет значения между запусками бота.
+def next_count(connection: sqlite3.Connection, chat_id: int) -> int:
     with connection:
         row = connection.execute(
             "SELECT count FROM chat_counters WHERE chat_id = ?", (chat_id,)
@@ -44,7 +46,8 @@ def main() -> None:
     if not TOKEN:
         raise SystemExit("Set the BOT_TOKEN environment variable before starting.")
 
-    # Подключаем локальную базу данных и создаём файл при первом запуске.\n    connection = sqlite3.connect(DATABASE_PATH)
+    # Подключаем локальную базу данных и создаём файл при первом запуске.
+    connection = sqlite3.connect(DATABASE_PATH)
     connection.execute(
         """
         CREATE TABLE IF NOT EXISTS chat_counters (
@@ -55,6 +58,8 @@ def main() -> None:
     )
 
     print("Bot is running. Press Ctrl+C to stop.")
+    # Long polling получает новые сообщения по мере их появления.
+    # offset нужен, чтобы Telegram не присылал уже обработанные сообщения повторно.
     offset = None
     while True:
         try:
@@ -69,7 +74,8 @@ def main() -> None:
                 if message is None:
                     continue
 
-                # Берём идентификатор чата, увеличиваем только его счётчик и отвечаем числом.\n                chat_id = message["chat"]["id"]
+                # Берём идентификатор чата, увеличиваем только его счётчик и отвечаем числом.
+                chat_id = message["chat"]["id"]
                 count = next_count(connection, chat_id)
                 telegram_request("sendMessage", {"chat_id": chat_id, "text": str(count)})
                 print(f"Chat {chat_id}: sent {count}")
@@ -81,4 +87,5 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+
 
