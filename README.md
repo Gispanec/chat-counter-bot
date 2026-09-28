@@ -5,10 +5,12 @@ A small Telegram bot that replies to every incoming message with a per-chat coun
 ## Run locally (Windows PowerShell)
 
 1. Install Python 3.10 or newer.
-2. Open PowerShell in this folder and set the token you received from BotFather:
+2. Open PowerShell in this folder and enter the token privately when prompted:
 
    ```powershell
-   $env:BOT_TOKEN = "your-new-token"
+   $secureToken = Read-Host "BotFather token" -AsSecureString
+   $env:BOT_TOKEN = [System.Net.NetworkCredential]::new("", $secureToken).Password
+   Remove-Variable secureToken
    python bot.py
    ```
 
